@@ -10,6 +10,11 @@ const Todo = () => {
     setTask('')
   }
 
+  const handleDelete=(index) => {
+    const newTasks = tasks.filter((_, i) => i !== index)
+    setTasks(newTasks)
+  }
+
   return (
     <div>
       <h2>Todo App</h2>
@@ -25,7 +30,10 @@ const Todo = () => {
 
       <ul>
         {tasks.map((t, index) => (
-          <li key={index}>{t}</li>
+          <li key={index}>
+            {t}
+            <button onClick={()=> handleDelete(index)}>Delete</button>
+          </li>
         ))}
       </ul>
     </div>
