@@ -4,16 +4,32 @@ const Todo = () => {
 
   const [task, setTask] = useState('')
   const [tasks, setTasks] = useState([])
+  const [editIndex, setEditIndex] = useState(null)
 
   const handleAdd = () => {
+  if(task === '') return;
+
+  if(editIndex !== null){
+    const updatedTasks = [...tasks]
+    updatedTasks[editIndex] = task
+    setTasks(updatedTasks)
+    setEditIndex(null)
+  } else {
     setTasks([...tasks, task])
-    setTask('')
   }
+
+  setTask('')
+}
 
   const handleDelete=(index) => {
     const newTasks = tasks.filter((_, i) => i !== index)
     setTasks(newTasks)
   }
+
+  const handleEdit = (index) => {
+  setTask(tasks[index])
+  setEditIndex(index)
+}
 
   return (
     <div>
@@ -32,7 +48,8 @@ const Todo = () => {
         {tasks.map((t, index) => (
           <li key={index}>
             {t}
-            <button onClick={()=> handleDelete(index)}>Delete</button>
+              <button onClick={() => handleEdit(editIndex)}>Edit</button>
+              <button onClick={()=> handleDelete(index)}>Delete</button>
           </li>
         ))}
       </ul>
