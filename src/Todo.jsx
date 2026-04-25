@@ -26,8 +26,8 @@ const Todo = () => {
     setTasks(newTasks)
   }
 
-  const handleEdit = (index) => {
-  setTask(tasks[index])
+ const handleEdit = (index) => {
+  setTask(tasks[index] || '')
   setEditIndex(index)
 }
 
@@ -48,7 +48,12 @@ const Todo = () => {
         {tasks.map((t, index) => (
           <li key={index}>
             {t}
-              <button onClick={() => handleEdit(editIndex)}>Edit</button>
+              <button onClick={() => {
+  console.log("Edit clicked", index)
+  handleEdit(index)
+}}>
+  Edit
+</button>
               <button onClick={()=> handleDelete(index)}>Delete</button>
           </li>
         ))}
