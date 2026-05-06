@@ -1,107 +1,160 @@
-import React, { useState } from 'react'
+import { useState } from "react";
+import "./App.css";
 
 const Todo = () => {
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [editId, setEditId] = useState(null);
+  const [filter, setFilter] = useState("all");
 
-  const [task, setTask] = useState('')
-  const [tasks, setTasks] = useState([])
-  const [editIndex, setEditIndex] = useState(null)
-  const [filter, setFilter] = useState("all")
+  const trimmedTask = task.trim();
+  const completedCount = tasks.filter((item) => item.completed).length;
+  const pendingCount = tasks.length - completedCount;
 
-  // ➕ Add / Update Task
-  const handleAdd = () => {
-    if (task === '') return;
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (trimmedTask === "") return;
 
-    if (editIndex !== null) {
-      const updatedTasks = [...tasks]
-
-      // ✅ Preserve completed status
-      updatedTasks[editIndex] = {
-        ...updatedTasks[editIndex],
-        text: task
-      }
-
-      setTasks(updatedTasks)
-      setEditIndex(null)
+    if (editId !== null) {
+      setTasks(
+        tasks.map((item) =>
+          item.id === editId ? { ...item, text: trimmedTask } : item
+        )
+      );
+      setEditId(null);
     } else {
-      setTasks([...tasks, { text: task, completed: false }])
+      setTasks([
+        ...tasks,
+        { id: crypto.randomUUID(), text: trimmedTask, completed: false },
+      ]);
     }
 
-    setTask('')
-  }
+    setTask("");
+  };
 
-  // ❌ Delete Task
-  const handleDelete = (index) => {
-    const newTasks = tasks.filter((_, i) => i !== index)
-    setTasks(newTasks)
-  }
+  const handleDelete = (id) => {
+    setTasks(tasks.filter((item) => item.id !== id));
+    if (editId === id) {
+      setTask("");
+      setEditId(null);
+    }
+  };
 
-  // ✏️ Edit Task
-  const handleEdit = (index) => {
-    setTask(tasks[index].text || '')
-    setEditIndex(index)
-  }
+  const handleEdit = (id) => {
+    const selectedTask = tasks.find((item) => item.id === id);
+    setTask(selectedTask?.text || "");
+    setEditId(id);
+  };
 
-  // ✅ Toggle Complete
-  const handleToggle = (index) => {
-    const updatedTasks = [...tasks]
-    updatedTasks[index].completed = !updatedTasks[index].completed
-    setTasks(updatedTasks)
-  }
+  const handleToggle = (id) => {
+    setTasks(
+      tasks.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      )
+    );
+  };
 
-  // 🔍 Filter Logic (IMPORTANT)
-  const filteredTasks = tasks.filter((t) => {
-    if (filter === "completed") return t.completed
-    if (filter === "pending") return !t.completed
-    return true
-  })
+  const filteredTasks = tasks.filter((item) => {
+    if (filter === "completed") return item.completed;
+    if (filter === "pending") return !item.completed;
+    return true;
+  });
 
   return (
-    <div>
-      <h2>Todo App</h2>
+    <div className="container">
+      <header className="todo-header">
+        <div>
+          <span className="eyebrow">Workspace</span>
+          <h2 className="title">Today&apos;s Tasks</h2>
+        </div>
+        <div className="progress-pill">
+          <strong>{completedCount}</strong>
+          <span>done</span>
+        </div>
+      </header>
 
-      {/* 🔘 Filter Buttons */}
-      <button onClick={() => setFilter("all")}>All</button>
-      <button onClick={() => setFilter("completed")}>Completed</button>
-      <button onClick={() => setFilter("pending")}>Pending</button>
+      <section className="stats-grid" aria-label="Task summary">
+        <div>
+          <span>Total</span>
+          <strong>{tasks.length}</strong>
+        </div>
+        <div>
+          <span>Pending</span>
+          <strong>{pendingCount}</strong>
+        </div>
+        <div>
+          <span>Complete</span>
+          <strong>{completedCount}</strong>
+        </div>
+      </section>
 
-      <br /><br />
+      <div className="filters">
+        <button
+          className={filter === "all" ? "active" : ""}
+          onClick={() => setFilter("all")}
+        >
+          All
+        </button>
+        <button
+          className={filter === "completed" ? "active" : ""}
+          onClick={() => setFilter("completed")}
+        >
+          Completed
+        </button>
+        <button
+          className={filter === "pending" ? "active" : ""}
+          onClick={() => setFilter("pending")}
+        >
+          Pending
+        </button>
+      </div>
 
-      {/* ✏️ Input */}
-      <input
-        type="text"
-        value={task}
-        onChange={(e) => setTask(e.target.value)}
-        placeholder="Enter task"
-      />
+      <form className="input-box" onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={task}
+          onChange={(event) => setTask(event.target.value)}
+          placeholder="Add a task..."
+        />
 
-      {/* ➕ Add / Update Button */}
-      <button onClick={handleAdd}>
-        {editIndex !== null ? "Update" : "Add"}
-      </button>
+        <button type="submit">{editId !== null ? "Update" : "Add"}</button>
+      </form>
 
-      {/* 📋 Task List */}
-      <ul>
-        {filteredTasks.map((t, index) => (
-          <li
-            key={index}
-            style={{
-              textDecoration: t.completed ? "line-through" : "none",
-              color: t.completed ? "gray" : "black"
-            }}
+      <div className="task-list">
+        {filteredTasks.length === 0 && (
+          <div className="empty-state">
+            <strong>No tasks here</strong>
+            <span>
+              {tasks.length === 0
+                ? "Add your first task to begin."
+                : "Try another filter."}
+            </span>
+          </div>
+        )}
+
+        {filteredTasks.map((item) => (
+          <div
+            className={`todo-card ${item.completed ? "is-complete" : ""}`}
+            key={item.id}
           >
-            {t.text}
+            <p className={item.completed ? "completed" : ""}>{item.text}</p>
 
-            <button onClick={() => handleEdit(index)}>Edit</button>
-            <button onClick={() => handleDelete(index)}>Delete</button>
-
-            <button onClick={() => handleToggle(index)}>
-              {t.completed ? "Mark Pending" : "Mark Complete"}
-            </button>
-          </li>
+            <div className="btn-group">
+              <button className="edit" onClick={() => handleEdit(item.id)}>
+                Edit
+              </button>
+              <button className="delete" onClick={() => handleDelete(item.id)}>
+                Delete
+              </button>
+              <button className="complete" onClick={() => handleToggle(item.id)}>
+                {item.completed ? "Undo" : "Done"}
+              </button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Todo
+export default Todo;

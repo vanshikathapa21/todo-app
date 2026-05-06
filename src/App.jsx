@@ -1,12 +1,28 @@
-import React from 'react'
-import Todo from './Todo'
+import { useState } from "react";
+import Todo from "./Todo";
+import "./App.css";
 
-function App() {
+const App = () => {
+  const [start, setStart] = useState(false);
+
   return (
-    <div>
-      <Todo />
-    </div>
-  )
-}
+    <main className="app-shell">
+      {start ? (
+        <Todo />
+      ) : (
+        <div className="landing">
+          <div className="landing-content">
+            <span className="eyebrow">Smart daily planning</span>
+            <h1>Task Manager</h1>
+            <p>Plan the day, track progress, and keep your priorities clear.</p>
+            <button className="primary-action" onClick={() => setStart(true)}>
+              Get Started
+            </button>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+};
 
-export default App
+export default App;
